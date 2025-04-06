@@ -38,6 +38,82 @@
             font-size: 2.5em;
         }
 
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            cursor: pointer;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: rgba(74, 144, 226, 0.2);
+            color: #4a90e2;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .combo-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .combo-input {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background: rgba(30, 40, 60, 0.8);
+            color: white;
+            font-size: 16px;
+            resize: vertical;
+        }
+
+        .combo-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a90e2;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
         .search-container {
             background: rgba(255, 255, 255, 0.1);
             padding: 20px;
@@ -137,6 +213,50 @@
             word-break: break-all;
         }
 
+        .result-item .file-name {
+            color: #4a90e2;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .result-item .line-content {
+            padding-left: 10px;
+            border-left: 3px solid #4a90e2;
+        }
+
+        .file-group {
+            margin-bottom: 20px;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .file-header {
+            background: rgba(74, 144, 226, 0.2);
+            padding: 10px;
+            font-weight: bold;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-header .file-name {
+            font-size: 1.1em;
+        }
+
+        .file-header .result-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+
+        .file-results {
+            padding: 10px;
+        }
+
         .drop-zone {
             border: 2px dashed rgba(74, 144, 226, 0.5);
             padding: 20px;
@@ -166,51 +286,192 @@
             margin: 10px 0;
             color: #4a90e2;
         }
+
+        .error {
+            color: #ff6b6b;
+        }
+
+        .settings-panel {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .settings-panel label {
+            display: flex;
+            align-items: center;
+            color: #fff;
+            margin-right: 15px;
+        }
+
+        .settings-panel select, .settings-panel input {
+            background: rgba(30, 40, 60, 0.8);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+
+        .settings-panel .setting-group {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Select dropdown için option stillerini düzenle */
+        .settings-panel select option {
+            background-color: #1a1a2e;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1><i class="fas fa-search"></i> Dosya Arama Sistemi</h1>
         
-        <div class="search-container">
-            <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                <i class="fas fa-cloud-upload-alt fa-2x"></i>
-                <p>Dosyaları sürükleyin veya seçmek için tıklayın</p>
-                <input type="file" id="fileInput" multiple accept=".txt,.html,.css,.js,.php" onchange="handleFiles(this.files)">
-            </div>
-
-            <div id="fileList" class="file-list"></div>
-
-            <input type="text" id="searchInput" class="search-input" placeholder="Aranacak kelimeyi girin...">
-
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn search-btn" onclick="searchFiles()">
-                    <i class="fas fa-search"></i> Ara
-                </button>
-                <button class="btn download-btn" onclick="downloadResults()">
-                    <i class="fas fa-download"></i> Sonuçları İndir
-                </button>
-            </div>
+        <div class="tab-container">
+            <div class="tab active" onclick="openTab('search-tab')">Dosya Arama</div>
+            <div class="tab" onclick="openTab('combo-tab')">Combo Ayıklayıcı</div>
         </div>
+        
+        <!-- Dosya Arama Sekmesi -->
+        <div id="search-tab" class="tab-content active">
+            <div class="settings-panel">
+                <div class="setting-group">
+                    <label for="maxResults">
+                        Maksimum Sonuç:
+                        <select id="maxResults">
+                            <option value="1000">1000</option>
+                            <option value="2000">2000</option>
+                            <option value="5000">5000</option>
+                            <option value="10000" selected>10000</option>
+                            <option value="0">Limitsiz (Dikkat: Tarayıcı kilitlenenebilir)</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="search-container">
+                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt fa-2x"></i>
+                    <p>Dosyaları sürükleyin veya seçmek için tıklayın</p>
+                    <input type="file" id="fileInput" multiple accept=".txt,.html,.css,.js,.php" onchange="handleFiles(this.files)">
+                </div>
 
-        <div id="status" class="status"></div>
-        <div id="searchResults" class="results"></div>
+                <div id="fileList" class="file-list"></div>
+
+                <input type="text" id="searchInput" class="search-input" placeholder="Aranacak kelimeyi girin...">
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn search-btn" onclick="searchFiles()">
+                        <i class="fas fa-search"></i> Ara
+                    </button>
+                    <button class="btn download-btn" onclick="downloadResults()">
+                        <i class="fas fa-download"></i> Sonuçları İndir
+                    </button>
+                </div>
+            </div>
+
+            <div id="status" class="status"></div>
+            <div id="searchResults" class="results"></div>
+        </div>
+        
+        <!-- Combo Ayıklayıcı Sekmesi -->
+        <div id="combo-tab" class="tab-content">
+            <div class="combo-container">
+                <div class="settings-panel">
+                    <div class="setting-group">
+                        <label for="comboFormat">
+                            Format:
+                            <select id="comboFormat">
+                                <option value="URL:PASS">URL:PASS</option>
+                                <option value="MAIL:PASS">MAIL:PASS</option>
+                                <option value="USERNAME:PASS">USERNAME:PASS</option>
+                                <option value="USER:PASS">USER:PASS</option>
+                                <option value="URL:MAIL:PASS">URL:MAIL:PASS</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Dosya Yükleme ve Sürükle-Bırak Bölümü -->
+                <div class="drop-zone" id="comboDropZone" onclick="document.getElementById('comboFileInput').click()">
+                    <i class="fas fa-cloud-upload-alt fa-2x"></i>
+                    <p>Combo dosyasını sürükleyin veya seçmek için tıklayın</p>
+                    <p><small>veya aşağıdaki metin kutusuna doğrudan yapıştırın</small></p>
+                    <input type="file" id="comboFileInput" accept=".txt" onchange="handleComboFile(this.files)">
+                </div>
+                
+                <textarea id="comboInput" class="combo-input" placeholder="Comboları buraya yapıştırın (her combo bir satırda olmalı)"></textarea>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn search-btn" onclick="extractCombos()">
+                        <i class="fas fa-filter"></i> Ayıkla
+                    </button>
+                    <button class="btn download-btn" onclick="downloadExtractedCombos()">
+                        <i class="fas fa-download"></i> Sonuçları İndir
+                    </button>
+                </div>
+                
+                <div class="combo-stats">
+                    <div class="stat-item">
+                        <div id="totalLines" class="stat-value">0</div>
+                        <div class="stat-label">Toplam Satır</div>
+                    </div>
+                    <div class="stat-item">
+                        <div id="extractedCombos" class="stat-value">0</div>
+                        <div class="stat-label">Ayıklanan Combo</div>
+                    </div>
+                    <div class="stat-item">
+                        <div id="successRate" class="stat-value">0%</div>
+                        <div class="stat-label">Başarı Oranı</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="comboStatus" class="status"></div>
+            <div id="extractedResults" class="results"></div>
+        </div>
     </div>
 
     <script>
-        let selectedFiles = new Set();
+        const MAX_FILE_SIZE = 5 * 1024 * 1024 * 1024; // 5 GB
+        let selectedFiles = []; // Set yerine array kullanacağız
         let searchResults = [];
 
         function handleFiles(files) {
+            const status = document.getElementById('status');
+            status.textContent = '';
+            status.classList.remove('error');
+
+            // Dosyaları array olarak saklayalım
             Array.from(files).forEach(file => {
-                selectedFiles.add(file);
+                if (file.size > MAX_FILE_SIZE) {
+                    status.textContent = `Hata: "${file.name}" dosyası 5 GB boyut sınırını aşıyor!`;
+                    status.classList.add('error');
+                    return;
+                }
+                
+                // Dosya zaten ekliyse eklemeyelim
+                if (!selectedFiles.some(existingFile => existingFile.name === file.name)) {
+                    selectedFiles.push(file);
+                }
             });
+            
             updateFileList();
+            status.textContent = `${selectedFiles.length} dosya seçildi`;
         }
 
         function removeFile(fileName) {
-            selectedFiles = new Set(Array.from(selectedFiles).filter(file => file.name !== fileName));
+            selectedFiles = selectedFiles.filter(file => file.name !== fileName);
             updateFileList();
+            document.getElementById('status').textContent = `${selectedFiles.length} dosya seçildi`;
         }
 
         function updateFileList() {
@@ -231,74 +492,255 @@
             });
         }
 
-        function searchFiles() {
+        // Dosyaları senkron olarak oku ve ara
+        async function readAndSearch(file, searchTerm) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB chunks
+                    const results = [];
+                    let filePosition = 0;
+                    let lineNumber = 1;
+                    
+                    console.log(`${file.name} dosyası parçalar halinde okunuyor (Boyut: ${formatFileSize(file.size)})`);
+                    
+                    // Dosyayı parçalı okuma işlemi
+                    function processChunk() {
+                        const status = document.getElementById('status');
+                        status.textContent = `"${file.name}" dosyası işleniyor... (${Math.round(filePosition / file.size * 100)}%)`;
+                        
+                        // Dosya sonuna geldik mi kontrol et
+                        if (filePosition >= file.size) {
+                            console.log(`${file.name} dosyası tamamen okundu, ${results.length} sonuç bulundu`);
+                            resolve(results);
+                            return;
+                        }
+                        
+                        // Parçayı oku
+                        const blob = file.slice(filePosition, Math.min(filePosition + CHUNK_SIZE, file.size));
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            try {
+                                const chunk = e.target.result;
+                                const lines = chunk.split('\n');
+                                
+                                // Son satır yarım olabilir, bir sonraki parçayla birleştirmek üzere sakla
+                                // (sadece ilk parça değilse)
+                                const lastPartialLine = filePosition > 0 ? lines.shift() : null;
+                                
+                                // Arama işlemi
+                                lines.forEach((line) => {
+                                    if (line.toLowerCase().includes(searchTerm.toLowerCase())) {
+                                        const trimmedLine = line.trim();
+                                        if (trimmedLine) {
+                                            results.push({
+                                                fileName: file.name,
+                                                line: trimmedLine,
+                                                lineNumber: lineNumber
+                                            });
+                                        }
+                                    }
+                                    lineNumber++;
+                                });
+                                
+                                // Sonraki parçaya geç
+                                filePosition += CHUNK_SIZE;
+                                
+                                // Tarayıcıya nefes aldır ve bir sonraki parçayı işle
+                                setTimeout(processChunk, 0);
+                            } catch (error) {
+                                console.error(`${file.name} arama hatası:`, error);
+                                reject(error);
+                            }
+                        };
+                        
+                        reader.onerror = function(event) {
+                            console.error(`${file.name} okuma hatası:`, event);
+                            reject(new Error(`Dosya okunamadı: ${file.name}`));
+                        };
+                        
+                        reader.readAsText(blob);
+                    }
+                    
+                    // İlk parçayı işlemeye başla
+                    processChunk();
+                } catch (error) {
+                    console.error(`${file.name} işlem hatası:`, error);
+                    reject(error);
+                }
+            });
+        }
+
+        // Dosya boyutunu formatlı göster
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+            else return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+        }
+
+        async function searchFiles() {
             const searchTerm = document.getElementById('searchInput').value.trim();
             const resultsDiv = document.getElementById('searchResults');
             const status = document.getElementById('status');
+            const maxResultsSelect = document.getElementById('maxResults');
+            const maxResults = parseInt(maxResultsSelect.value) || 0; // 0 = limitsiz
             
-            if (!selectedFiles.size || !searchTerm) {
+            status.classList.remove('error');
+            
+            if (selectedFiles.length === 0 || !searchTerm) {
                 status.textContent = 'Lütfen dosya seçin ve arama terimi girin!';
+                status.classList.add('error');
                 return;
+            }
+
+            // Büyük dosyaları uyarı ver
+            const bigFiles = selectedFiles.filter(file => file.size > 100 * 1024 * 1024); // 100 MB üstü
+            if (bigFiles.length > 0) {
+                const fileNames = bigFiles.map(f => `${f.name} (${formatFileSize(f.size)})`).join(', ');
+                console.warn(`Dikkat: Büyük dosyalar seçildi ve işleme süresi uzun olabilir: ${fileNames}`);
             }
 
             searchResults = [];
             resultsDiv.innerHTML = '';
-            status.textContent = 'Arama yapılıyor...';
-            let filesProcessed = 0;
-
-            selectedFiles.forEach(file => {
-                const reader = new FileReader();
+            status.textContent = `Arama yapılıyor... (${selectedFiles.length} dosya)`;
+            
+            try {
+                console.log(`Toplam ${selectedFiles.length} dosya aranacak, arama terimi: "${searchTerm}"`);
                 
-                reader.onload = function(e) {
+                const allResults = [];
+                const resultsByFile = {}; // Dosya adına göre sonuçları grupla
+                
+                // Her dosyayı tek tek işle
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    console.log(`İşleniyor: ${i+1}/${selectedFiles.length} - ${file.name} (${formatFileSize(file.size)})`);
+                    
                     try {
-                        const content = e.target.result;
-                        const lines = content.split('\n');
+                        const results = await readAndSearch(file, searchTerm);
+                        console.log(`${file.name} dosyasında ${results.length} sonuç bulundu`);
                         
-                        lines.forEach((line, index) => {
-                            if (line.toLowerCase().includes(searchTerm.toLowerCase())) {
-                                const trimmedLine = line.trim();
-                                if (trimmedLine) {
-                                    searchResults.push({
-                                        fileName: file.name,
-                                        line: trimmedLine
-                                    });
-                                    displayResult(file.name, trimmedLine);
-                                }
-                            }
-                        });
-
-                        filesProcessed++;
-                        if (filesProcessed === selectedFiles.size) {
-                            status.textContent = `${searchResults.length} sonuç bulundu`;
+                        // Çok fazla sonuç varsa, bellek taşmasını önlemek için limitli sayıda sonuç göster
+                        const displayResults = maxResults > 0 && results.length > maxResults 
+                            ? results.slice(0, maxResults) 
+                            : results;
+                            
+                        if (maxResults > 0 && results.length > maxResults) {
+                            console.warn(`${file.name} dosyasında ${results.length} sonuç bulundu, ancak performans için sadece ilk ${maxResults} sonuç gösteriliyor.`);
                         }
+                        
+                        allResults.push(...displayResults);
+                        
+                        // Dosya adına göre sonuçları grupla
+                        if (displayResults.length > 0) {
+                            resultsByFile[file.name] = displayResults;
+                            if (maxResults > 0 && results.length > maxResults) {
+                                resultsByFile[file.name].truncated = true;
+                                resultsByFile[file.name].totalResults = results.length;
+                            }
+                        }
+                        
+                        // Durum güncellemesi
+                        status.textContent = `İşleniyor... ${i+1}/${selectedFiles.length} dosya (${allResults.length} sonuç bulundu)`;
                     } catch (error) {
-                        status.textContent = 'Dosya okuma hatası: ' + error.message;
+                        console.error(`${file.name} dosyası işlenirken hata:`, error);
+                        status.textContent += ` | ${file.name}: Hata oluştu`;
                     }
-                };
-
-                reader.onerror = function() {
-                    status.textContent = 'Dosya okuma hatası oluştu';
-                };
-
-                reader.readAsText(file);
-            });
+                }
+                
+                searchResults = allResults;
+                
+                // Sonuçları dosyalara göre gruplandırarak göster
+                displayGroupedResults(resultsByFile);
+                
+                status.textContent = `${searchResults.length} sonuç bulundu (${Object.keys(resultsByFile).length}/${selectedFiles.length} dosyada)`;
+                console.log(`Arama tamamlandı, toplam ${searchResults.length} sonuç`);
+                
+            } catch (error) {
+                console.error("Arama işlemi hatası:", error);
+                status.textContent = 'Arama hatası: ' + error.message;
+                status.classList.add('error');
+            }
         }
 
-        function displayResult(fileName, line) {
+        function displayGroupedResults(resultsByFile) {
             const resultsDiv = document.getElementById('searchResults');
-            const resultElement = document.createElement('div');
-            resultElement.className = 'result-item';
-            resultElement.textContent = line;
-            resultsDiv.appendChild(resultElement);
+            resultsDiv.innerHTML = '';
+            
+            // Her dosya için bir grup oluştur
+            Object.keys(resultsByFile).forEach(fileName => {
+                const results = resultsByFile[fileName];
+                
+                // Dosya grubu oluştur
+                const fileGroup = document.createElement('div');
+                fileGroup.className = 'file-group';
+                
+                // Dosya başlığı
+                const fileHeader = document.createElement('div');
+                fileHeader.className = 'file-header';
+                
+                const fileNameEl = document.createElement('div');
+                fileNameEl.className = 'file-name';
+                fileNameEl.innerHTML = `<i class="fas fa-file-alt"></i> ${fileName}`;
+                
+                const resultCount = document.createElement('div');
+                resultCount.className = 'result-count';
+                
+                // Eğer sonuçlar kesildiyse uyarı göster
+                if (results.truncated) {
+                    resultCount.textContent = `${results.length}/${results.totalResults} sonuç (ilk 1000 gösteriliyor)`;
+                    resultCount.style.color = '#ffcc00';
+                } else {
+                    resultCount.textContent = `${results.length} sonuç`;
+                }
+                
+                fileHeader.appendChild(fileNameEl);
+                fileHeader.appendChild(resultCount);
+                fileGroup.appendChild(fileHeader);
+                
+                // Dosya sonuçları
+                const fileResults = document.createElement('div');
+                fileResults.className = 'file-results';
+                
+                // Sonuçları ekle
+                results.forEach(result => {
+                    if (result === undefined) return; // Hata olabilir, güvenli kontrol
+                    
+                    const resultElement = document.createElement('div');
+                    resultElement.className = 'result-item';
+                    
+                    const lineNumberEl = document.createElement('span');
+                    lineNumberEl.className = 'file-name';
+                    lineNumberEl.textContent = `Satır ${result.lineNumber || '?'}`;
+                    
+                    const lineElement = document.createElement('div');
+                    lineElement.className = 'line-content';
+                    lineElement.textContent = result.line;
+                    
+                    resultElement.appendChild(lineNumberEl);
+                    resultElement.appendChild(lineElement);
+                    fileResults.appendChild(resultElement);
+                });
+                
+                fileGroup.appendChild(fileResults);
+                resultsDiv.appendChild(fileGroup);
+            });
+            
+            // Sonuç yoksa bilgi mesajı göster
+            if (Object.keys(resultsByFile).length === 0) {
+                resultsDiv.innerHTML = '<div class="result-item">Sonuç bulunamadı</div>';
+            }
         }
 
         function downloadResults() {
             if (!searchResults.length) {
-                document.getElementById('status').textContent = 'İndirilecek sonuç bulunamadı!';
+                const status = document.getElementById('status');
+                status.textContent = 'İndirilecek sonuç bulunamadı!';
+                status.classList.add('error');
                 return;
             }
 
-            const content = searchResults.map(result => result.line).join('\n');
+            const content = searchResults.map(result => `[${result.fileName} - Satır ${result.lineNumber}] ${result.line}`).join('\n');
             const blob = new Blob([content], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -309,7 +751,9 @@
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
             
-            document.getElementById('status').textContent = 'Sonuçlar başarıyla indirildi';
+            const status = document.getElementById('status');
+            status.textContent = 'Sonuçlar başarıyla indirildi';
+            status.classList.remove('error');
         }
 
         // Drag and drop işlemleri
@@ -330,6 +774,547 @@
             dropZone.classList.remove('drag-over');
             handleFiles(e.dataTransfer.files);
         });
+        
+        // Sekme değiştirme fonksiyonu
+        function openTab(tabId) {
+            const tabContents = document.querySelectorAll('.tab-content');
+            const tabs = document.querySelectorAll('.tab');
+            
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        
+        // Combo işleme değişkenleri
+        let extractedComboResults = [];
+        
+        // Combo formatları ve regex kalıpları
+        const comboRegexPatterns = {
+            'URL:PASS': /^(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?:\/[^\s:]*)?(?:[:|;]|\s+[:|;]|\s*[:|;]\s*)([^\s]+)$/i,
+            'MAIL:PASS': /^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?:[:|;]|\s+[:|;]|\s*[:|;]\s*)([^\s]+)$/i,
+            'USERNAME:PASS': /^([a-zA-Z0-9._-]+)(?:[:|;]|\s+[:|;]|\s*[:|;]\s*)([^\s]+)$/i,
+            'USER:PASS': /^([a-zA-Z0-9._-]+)(?:[:|;]|\s+[:|;]|\s*[:|;]\s*)([^\s]+)$/i,
+            'URL:MAIL:PASS': /^(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?:\/[^\s:]*)?(?:[:|;]|\s*[:|;]\s*)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?:[:|;]|\s*[:|;]\s*)([^\s]+)$/i,
+            // Platform özel formatlar - ayırıcı olmadan direk bitişik de olabilir
+            'DISNEY_FORMAT': /^(?:https?:\/\/)?(?:www\.)?disneyplus\.com(?:\/[^:]*)?:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}):([^\s]+)$/i
+        };
+        
+        // Özel URL:MAIL:PASS formatı için işleyici - www.disneyplus.com:email@mail.com:password şeklindeki veriler için
+        function processSpecialURLMailPass(line) {
+            // Bitişik format: domain.com:mail@domain.com:password
+            const bitisikFormat = /^(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?:\/[^:]*)?:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}):([^\s]+)$/i;
+            
+            // Hata ayıklama
+            console.log("processSpecialURLMailPass çalıştırılıyor:", line);
+            
+            // Bitişik format kontrolü
+            const bitisikMatch = line.match(bitisikFormat);
+            if (bitisikMatch) {
+                console.log("URL:MAIL:PASS özel formatı tespit edildi:", bitisikMatch);
+                return {
+                    url: bitisikMatch[1],
+                    email: bitisikMatch[2],
+                    password: bitisikMatch[3]
+                };
+            }
+            
+            // Bu satır özel formata uymuyorsa null döndür
+            return null;
+        }
+
+        // Otomatik format tanıma
+        function detectFormat(line) {
+            // Önce özel formatları kontrol et
+            if (line.includes('disneyplus.com')) {
+                // Disney+ özel formatı olabilir
+                console.log("Disney+ formatı olabilir, özel işleme yapılıyor:", line);
+                const specialResult = processSpecialURLMailPass(line);
+                if (specialResult) return 'URL:MAIL:PASS';
+            }
+            
+            // E-posta adresi içeriyor mu?
+            const hasEmail = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i.test(line);
+            
+            // URL içeriyor mu?
+            const hasUrl = /(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i.test(line);
+            
+            // İki nokta üst üste sayısını kontrol et
+            const colonCount = (line.match(/:/g) || []).length;
+            
+            if (hasEmail && hasUrl && colonCount >= 2) {
+                return 'URL:MAIL:PASS';
+            } else if (hasEmail) {
+                return 'MAIL:PASS';
+            } else if (hasUrl) {
+                return 'URL:PASS';
+            } else {
+                return 'USER:PASS';
+            }
+        }
+
+        // Satırdan bilgi çıkaran yardımcı fonksiyon - seçilen formata göre işlem yapar
+        function extractFromLine(line, format) {
+            // Hata ayıklama için satırın ilk halini kaydet
+            const originalLine = line;
+            
+            // Satırı temizleyelim
+            line = line.replace(/\s+/g, ' ').trim();
+            
+            // Satır numarası ve dosya adı ön ekini kaldır
+            line = line.replace(/^.*\[(25M|mix).*Satır\s+\d+\]\s+/, '');
+            line = line.replace(/^\[.*\]\s+/, ''); // Köşeli parantez içindeki herhangi bir şeyi kaldır
+            
+            // Hata ayıklama 
+            console.log(`Format: ${format}, Temizlenmiş satır: "${line}"`);
+            
+            // Özel format: URL:MAIL:PASS
+            if (format === 'URL:MAIL:PASS') {
+                // Önce özel format kontrolü
+                const specialResult = processSpecialURLMailPass(line);
+                if (specialResult) {
+                    console.log("Özel format işleyici başarılı:", specialResult);
+                    return specialResult;
+                }
+            }
+            
+            // Düzenli ifade ile ayıklama dene
+            const regex = comboRegexPatterns[format];
+            const match = line.match(regex);
+            
+            if (!match) {
+                console.log(`Regex eşleşmedi: ${format}, Satır: "${line}"`);
+                
+                // Otomatik format tespiti deneyelim
+                const detectedFormat = detectFormat(line);
+                if (detectedFormat !== format) {
+                    console.log(`Format tespit edildi: ${format} -> ${detectedFormat}, yeniden deneniyor`);
+                    return extractFromLine(line, detectedFormat);
+                }
+                
+                // Son çare: universalExtract'ı dene
+                console.log("Son çare olarak universalExtract deneniyor");
+                const universalResult = universalExtract(originalLine);
+                if (universalResult) {
+                    console.log("universalExtract başarılı:", universalResult);
+                    return universalResult;
+                }
+                
+                return null;
+            }
+            
+            let result = {};
+            
+            if (format === 'URL:PASS') {
+                result = {
+                    url: match[1],
+                    password: match[2]
+                };
+            } else if (format === 'MAIL:PASS') {
+                result = {
+                    email: match[1],
+                    password: match[2]
+                };
+            } else if (format === 'USERNAME:PASS' || format === 'USER:PASS') {
+                result = {
+                    username: match[1],
+                    password: match[2]
+                };
+            } else if (format === 'URL:MAIL:PASS') {
+                result = {
+                    url: match[1],
+                    email: match[2],
+                    password: match[3]
+                };
+            }
+            
+            console.log(`Regex eşleşme başarılı, sonuç:`, result);
+            return result;
+        }
+
+        // Combo ayıklama fonksiyonu
+        function extractCombos() {
+            // Mevcut sonuçları temizle
+            extractedComboResults = [];
+            document.getElementById('extractedResults').innerHTML = '';
+            
+            // Girdi kutusundan metni al
+            const inputText = document.getElementById('comboInput').value;
+            // Satırlara ayır
+            const lines = inputText.split('\n');
+            
+            // İşlenecek format seçimini al
+            const formatSelect = document.getElementById('comboFormat');
+            const selectedFormat = formatSelect.options[formatSelect.selectedIndex].value;
+            
+            console.log(`Ayıklama başlatılıyor, ${lines.length} satır, format: ${selectedFormat}`);
+            
+            // Satırları işle
+            let successCount = 0;
+            let failureCount = 0;
+            
+            lines.forEach((line, index) => {
+                if (line.trim() === '') return; // Boş satırları atla
+                
+                // Debugging
+                console.log(`Satır ${index+1} işleniyor: "${line}"`);
+                
+                // Önce özel URL:MAIL:PASS kontrolü (Disney+ formatı için)
+                if (selectedFormat === 'URL:MAIL:PASS' && (line.includes('disneyplus') || line.includes('disney+'))) {
+                    console.log("Disney+ formatı tespit edildi, özel işlem uygulanıyor");
+                    
+                    // www.disneyplus.com:mail@domain.com:şifre formatı
+                    // ya da bilgi önce gelip sonra formatta gelme durumu
+                    let cleanedLine = line;
+                    
+                    // Ön bilgileri temizle
+                    cleanedLine = cleanedLine.replace(/^.*\[(25M|mix).*Satır\s+\d+\]\s+/, '');
+                    cleanedLine = cleanedLine.replace(/^\[.*\]\s+/, '');
+                    
+                    // Bu özel format için direk eşleme
+                    const bitisikFormat = /(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?:\/[^:]*)?:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}):([^\s]+)/i;
+                    const match = cleanedLine.match(bitisikFormat);
+                    
+                    if (match) {
+                        // Eşleme bulundu, sonuçları kaydet
+                        const extracted = {
+                            url: match[1],
+                            email: match[2],
+                            password: match[3]
+                        };
+                        
+                        console.log("Disney+ özel formatı başarıyla ayıklandı:", extracted);
+                        extractedComboResults.push(extracted);
+                        successCount++;
+                        return;
+                    }
+                }
+                
+                // Normal ayıklama işlemi 
+                const result = extractFromLine(line, selectedFormat);
+                
+                if (result) {
+                    extractedComboResults.push(result);
+                    successCount++;
+                    console.log("Ayıklama başarılı:", result);
+                } else {
+                    console.log("Ayıklama başarısız:", line);
+                    failureCount++;
+                }
+            });
+            
+            // Sonuçları göster
+            updateResults(successCount, failureCount, lines.length);
+        }
+        
+        // Ayıklanan comboları gösterme fonksiyonu
+        function displayExtractedCombo(original, extracted) {
+            const extractedResultsDiv = document.getElementById('extractedResults');
+            const resultElement = document.createElement('div');
+            resultElement.className = 'result-item';
+            
+            let displayText = '';
+            
+            if (extracted.email && extracted.password) {
+                displayText = `${extracted.email}:${extracted.password}`;
+            } else if (extracted.url && extracted.password) {
+                displayText = `${extracted.url}:${extracted.password}`;
+            } else if (extracted.username && extracted.password) {
+                displayText = `${extracted.username}:${extracted.password}`;
+            } else if (extracted.platform && extracted.username && extracted.password) {
+                displayText = `${extracted.platform}:${extracted.username}:${extracted.password}`;
+            } else if (extracted.url && extracted.email && extracted.password) {
+                displayText = `${extracted.url}:${extracted.email}:${extracted.password}`;
+            } else {
+                // Varsayılan gösterim, sadece mevcut alanlarla
+                displayText = Object.values(extracted).join(':');
+            }
+            
+            const lineElement = document.createElement('div');
+            lineElement.className = 'line-content';
+            lineElement.textContent = displayText;
+            
+            resultElement.appendChild(lineElement);
+            extractedResultsDiv.appendChild(resultElement);
+        }
+        
+        // Ayıklanan comboları indirme fonksiyonu
+        function downloadExtractedCombos() {
+            const extractedResultsArea = document.querySelector('#extractedResults textarea');
+            if (!extractedResultsArea || !extractedResultsArea.value.trim()) {
+                const statusElem = document.getElementById('comboStatus');
+                statusElem.textContent = 'İndirilecek sonuç bulunamadı!';
+                statusElem.classList.add('error');
+                return;
+            }
+            
+            // Seçilen formatı al
+            const formatSelect = document.getElementById('comboFormat');
+            const selectedFormat = formatSelect.options[formatSelect.selectedIndex].value;
+            
+            // Dosya adını oluştur
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const fileName = `extracted_${selectedFormat}_${timestamp}.txt`;
+            
+            // Dosyayı oluştur ve indir
+            const blob = new Blob([extractedResultsArea.value], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            
+            // Temizlik
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            const statusElem = document.getElementById('comboStatus');
+            statusElem.textContent = 'Sonuçlar başarıyla indirildi!';
+            statusElem.classList.remove('error');
+        }
+
+        // Combo dosyası işleme fonksiyonu
+        function handleComboFile(files) {
+            if (!files.length) return;
+            
+            const file = files[0]; // Sadece ilk dosyayı al
+            const comboStatus = document.getElementById('comboStatus');
+            comboStatus.textContent = `"${file.name}" dosyası yükleniyor...`;
+            
+            if (file.size > MAX_FILE_SIZE) {
+                comboStatus.textContent = `Hata: "${file.name}" dosyası 5 GB boyut sınırını aşıyor!`;
+                comboStatus.classList.add('error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    document.getElementById('comboInput').value = content;
+                    comboStatus.textContent = `"${file.name}" dosyası yüklendi. Ayıklamak için 'Ayıkla' butonuna tıklayın.`;
+                    comboStatus.classList.remove('error');
+                } catch (error) {
+                    comboStatus.textContent = 'Dosya okuma hatası: ' + error.message;
+                    comboStatus.classList.add('error');
+                }
+            };
+            
+            reader.onerror = function() {
+                comboStatus.textContent = 'Dosya okuma hatası oluştu';
+                comboStatus.classList.add('error');
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Combo için sürükle-bırak olayları
+        document.addEventListener('DOMContentLoaded', function() {
+            const comboDropZone = document.getElementById('comboDropZone');
+            
+            comboDropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                comboDropZone.classList.add('drag-over');
+            });
+
+            comboDropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                comboDropZone.classList.remove('drag-over');
+            });
+
+            comboDropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                comboDropZone.classList.remove('drag-over');
+                handleComboFile(e.dataTransfer.files);
+            });
+        });
+
+        // Genel akıllı ayıklama fonksiyonu - herhangi bir formattaki satırı işler
+        function universalExtract(line) {
+            // Satırı temizle
+            let cleanLine = line.trim();
+            
+            // Satır numarası ve dosya adı ön ekini kaldır
+            // Örnek: "[25M] @IggyCloudV1 (3).txt - Satır 1272] www.disneyplus.com:user@domain.com:password"
+            cleanLine = cleanLine.replace(/^.*\[(25M|mix).*Satır\s+\d+\]\s+/, '');
+            cleanLine = cleanLine.replace(/^\[.*\]\s+/, ''); // Köşeli parantez içindeki herhangi bir şeyi kaldır
+            
+            // E-posta varlığını kontrol et
+            const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i;
+            const emailMatch = cleanLine.match(emailRegex);
+            
+            // URL varlığını kontrol et
+            const urlRegex = /(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?:\/[^\s:]*)?/i;
+            const urlMatch = cleanLine.match(urlRegex);
+            
+            // Ayırıcıyı bul (: veya ;)
+            const separatorPos = Math.max(cleanLine.indexOf(':'), cleanLine.indexOf(';'));
+            
+            if (emailMatch) {
+                const email = emailMatch[1];
+                
+                // URL:MAIL:PASS formatı mı?
+                if (urlMatch && cleanLine.indexOf(urlMatch[0]) < cleanLine.indexOf(email)) {
+                    // URL ve email arası ayırıcıyı bul
+                    const urlEnd = cleanLine.indexOf(urlMatch[0]) + urlMatch[0].length;
+                    const emailStart = cleanLine.indexOf(email);
+                    
+                    // E-postadan sonra şifreyi bul
+                    const emailEnd = emailStart + email.length;
+                    const afterEmail = cleanLine.substring(emailEnd);
+                    const passwordSeparator = afterEmail.match(/[:|;]/);
+                    
+                    if (passwordSeparator) {
+                        const password = afterEmail.substring(passwordSeparator.index + 1).trim();
+                        return {
+                            url: urlMatch[1],
+                            email: email,
+                            password: password
+                        };
+                    }
+                }
+                
+                // MAIL:PASS formatı
+                // E-postadan sonraki metni bul
+                const afterEmail = cleanLine.substring(cleanLine.indexOf(email) + email.length);
+                // Ayırıcı karakteri bul
+                const separatorMatch = afterEmail.match(/[:|;]/);
+                
+                if (separatorMatch) {
+                    const password = afterEmail.substring(separatorMatch.index + 1).trim();
+                    return {
+                        email: email,
+                        password: password
+                    };
+                } else if (afterEmail.trim()) {
+                    // Ayırıcı yoksa, e-postadan sonraki tüm metin şifre olabilir
+                    return {
+                        email: email,
+                        password: afterEmail.trim()
+                    };
+                }
+            } else if (urlMatch && separatorPos > 0) {
+                // URL:PASS formatı
+                const url = urlMatch[1];
+                // URL'den sonraki metni bul
+                const afterUrl = cleanLine.substring(separatorPos + 1).trim();
+                
+                if (afterUrl) {
+                    return {
+                        url: url,
+                        password: afterUrl
+                    };
+                }
+            } else if (separatorPos > 0) {
+                // USER:PASS formatı
+                const username = cleanLine.substring(0, separatorPos).trim();
+                const password = cleanLine.substring(separatorPos + 1).trim();
+                
+                if (username && password) {
+                    return {
+                        username: username,
+                        password: password
+                    };
+                }
+            }
+            
+            // Özel durumlar - platform bazlı analiz
+            // Disneyplus özel formatı
+            if (cleanLine.includes('disneyplus.com') && cleanLine.includes('@')) {
+                const match = cleanLine.match(/(?:www\.)?disneyplus\.com(?:\/[^:]*)?:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}):([^\s]+)/i);
+                if (match) {
+                    return {
+                        email: match[1],
+                        password: match[2]
+                    };
+                }
+            }
+            
+            // Herhangi bir platform için URL:USER:PASS formatı
+            // platform.com/path:username:password
+            const platformMatch = cleanLine.match(/(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?:\/[^:]*)?:([^:]+):([^\s]+)/i);
+            if (platformMatch) {
+                // Eğer ikinci kısım email ise MAIL:PASS formatıdır
+                if (emailRegex.test(platformMatch[2])) {
+                    return {
+                        email: platformMatch[2],
+                        password: platformMatch[3]
+                    };
+                }
+                // Değilse USER:PASS formatıdır
+                return {
+                    platform: platformMatch[1],
+                    username: platformMatch[2],
+                    password: platformMatch[3]
+                };
+            }
+            
+            return null;
+        }
+
+        // Sonuçları gösterme fonksiyonu
+        function updateResults(successCount, failureCount, totalLines) {
+            const extractedResultsDiv = document.getElementById('extractedResults');
+            const formattedResults = [];
+            
+            // Seçilen formatı al
+            const formatSelect = document.getElementById('comboFormat');
+            const selectedFormat = formatSelect.options[formatSelect.selectedIndex].value;
+            
+            // Formata göre sonuçları biçimlendir
+            extractedComboResults.forEach(result => {
+                if (selectedFormat === 'URL:MAIL:PASS') {
+                    if (result.url && result.email && result.password) {
+                        formattedResults.push(`${result.url}:${result.email}:${result.password}`);
+                    }
+                } else if (selectedFormat === 'MAIL:PASS') {
+                    if (result.email && result.password) {
+                        formattedResults.push(`${result.email}:${result.password}`);
+                    }
+                } else if (selectedFormat === 'URL:PASS') {
+                    if (result.url && result.password) {
+                        formattedResults.push(`${result.url}:${result.password}`);
+                    }
+                } else {
+                    if (result.username && result.password) {
+                        formattedResults.push(`${result.username}:${result.password}`);
+                    }
+                }
+            });
+            
+            // Sonuçları göster - textarea oluştur
+            extractedResultsDiv.innerHTML = '';
+            const textarea = document.createElement('textarea');
+            textarea.className = 'extracted-results';
+            textarea.value = formattedResults.join('\n');
+            extractedResultsDiv.appendChild(textarea);
+            
+            // İstatistikleri güncelle
+            document.getElementById('totalLines').textContent = totalLines;
+            document.getElementById('extractedCombos').textContent = successCount;
+            
+            const successRate = totalLines > 0 ? Math.round((successCount / totalLines) * 100) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            // Durum mesajını güncelle
+            const statusElem = document.getElementById('comboStatus');
+            statusElem.textContent = `Ayıklama tamamlandı: ${successCount} combo bulundu`;
+            
+            if (failureCount > 0) {
+                statusElem.textContent += ` (${failureCount} satır eşleşmedi)`;
+            }
+            
+            console.log(`Ayıklama tamamlandı. Toplam: ${totalLines}, Başarılı: ${successCount}, Başarısız: ${failureCount}`);
+        }
     </script>
 </body>
 </html>
