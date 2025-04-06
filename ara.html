@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dosya Arama Sistemi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4a90e2;
+            font-size: 2.5em;
+        }
+
+        .search-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .file-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .file-item {
+            background: rgba(74, 144, 226, 0.2);
+            padding: 8px 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: rgba(74, 144, 226, 0.3);
+        }
+
+        .file-item i {
+            font-size: 1.2em;
+        }
+
+        .file-item .remove-btn {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .file-item .remove-btn:hover {
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .search-btn {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .download-btn {
+            background: #27ae60;
+            color: white;
+        }
+
+        .results {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(74, 144, 226, 0.5);
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #4a90e2;
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(74, 144, 226, 0.2);
+            border-color: #4a90e2;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            color: #4a90e2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-search"></i> Dosya Arama Sistemi</h1>
+        
+        <div class="search-container">
+            <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-cloud-upload-alt fa-2x"></i>
+                <p>Dosyaları sürükleyin veya seçmek için tıklayın</p>
+                <input type="file" id="fileInput" multiple accept=".txt,.html,.css,.js,.php" onchange="handleFiles(this.files)">
+            </div>
+
+            <div id="fileList" class="file-list"></div>
+
+            <input type="text" id="searchInput" class="search-input" placeholder="Aranacak kelimeyi girin...">
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn search-btn" onclick="searchFiles()">
+                    <i class="fas fa-search"></i> Ara
+                </button>
+                <button class="btn download-btn" onclick="downloadResults()">
+                    <i class="fas fa-download"></i> Sonuçları İndir
+                </button>
+            </div>
+        </div>
+
+        <div id="status" class="status"></div>
+        <div id="searchResults" class="results"></div>
+    </div>
+
+    <script>
+        let selectedFiles = new Set();
+        let searchResults = [];
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                selectedFiles.add(file);
+            });
+            updateFileList();
+        }
+
+        function removeFile(fileName) {
+            selectedFiles = new Set(Array.from(selectedFiles).filter(file => file.name !== fileName));
+            updateFileList();
+        }
+
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+
+            selectedFiles.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <i class="fas fa-file-alt"></i>
+                    ${file.name}
+                    <button class="remove-btn" onclick="removeFile('${file.name}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        function searchFiles() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+            const status = document.getElementById('status');
+            
+            if (!selectedFiles.size || !searchTerm) {
+                status.textContent = 'Lütfen dosya seçin ve arama terimi girin!';
+                return;
+            }
+
+            searchResults = [];
+            resultsDiv.innerHTML = '';
+            status.textContent = 'Arama yapılıyor...';
+            let filesProcessed = 0;
+
+            selectedFiles.forEach(file => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const content = e.target.result;
+                        const lines = content.split('\n');
+                        
+                        lines.forEach((line, index) => {
+                            if (line.toLowerCase().includes(searchTerm.toLowerCase())) {
+                                const trimmedLine = line.trim();
+                                if (trimmedLine) {
+                                    searchResults.push({
+                                        fileName: file.name,
+                                        line: trimmedLine
+                                    });
+                                    displayResult(file.name, trimmedLine);
+                                }
+                            }
+                        });
+
+                        filesProcessed++;
+                        if (filesProcessed === selectedFiles.size) {
+                            status.textContent = `${searchResults.length} sonuç bulundu`;
+                        }
+                    } catch (error) {
+                        status.textContent = 'Dosya okuma hatası: ' + error.message;
+                    }
+                };
+
+                reader.onerror = function() {
+                    status.textContent = 'Dosya okuma hatası oluştu';
+                };
+
+                reader.readAsText(file);
+            });
+        }
+
+        function displayResult(fileName, line) {
+            const resultsDiv = document.getElementById('searchResults');
+            const resultElement = document.createElement('div');
+            resultElement.className = 'result-item';
+            resultElement.textContent = line;
+            resultsDiv.appendChild(resultElement);
+        }
+
+        function downloadResults() {
+            if (!searchResults.length) {
+                document.getElementById('status').textContent = 'İndirilecek sonuç bulunamadı!';
+                return;
+            }
+
+            const content = searchResults.map(result => result.line).join('\n');
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'arama_sonuclari.txt';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            document.getElementById('status').textContent = 'Sonuçlar başarıyla indirildi';
+        }
+
+        // Drag and drop işlemleri
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+    </script>
+</body>
+</html>
